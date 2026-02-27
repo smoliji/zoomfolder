@@ -17,6 +17,7 @@ FetchContent_Declare(SDL3_ttf
     GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
     GIT_TAG main
     GIT_SHALLOW TRUE
+    GIT_SUBMODULES external/freetype external/harfbuzz
 )
 FetchContent_Declare(nfd
     GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
@@ -24,7 +25,7 @@ FetchContent_Declare(nfd
     GIT_SHALLOW TRUE
 )
 
-set(SDL3TTF_VENDORED ON CACHE BOOL "Use vendored freetype/harfbuzz")
+set(SDLTTF_VENDORED ON CACHE BOOL "")
 FetchContent_MakeAvailable(SDL3 SDL3_ttf nfd)
 
 add_executable(zoomfolder
