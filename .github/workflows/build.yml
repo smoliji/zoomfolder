@@ -29,6 +29,10 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
+      - name: Sign (macOS)
+        if: matrix.name == 'macos'
+        run: codesign --force --deep --sign - build/Zoomfolder.app
+
       - name: Package
         shell: bash
         run: |
