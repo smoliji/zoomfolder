@@ -54,7 +54,11 @@ int main(int argc, char *argv[])
 
     char font_path[4096];
     const char *base = SDL_GetBasePath();
+#ifdef __APPLE__
+    snprintf(font_path, sizeof(font_path), "%s../Resources/fonts/Inter-Regular.ttf", base);
+#else
     snprintf(font_path, sizeof(font_path), "%sfonts/Inter-Regular.ttf", base);
+#endif
     TTF_Font *font = TTF_OpenFont(font_path, 14);
     if (!font)
         fprintf(stderr, "TTF_OpenFont: %s (path: %s)\n",

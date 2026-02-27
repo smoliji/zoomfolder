@@ -32,19 +32,21 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          mkdir -p staging
           if [ "${{ matrix.name }}" = "windows" ]; then
+            mkdir -p staging
             cp build/Release/zoomfolder.exe staging/ 2>/dev/null || cp build/zoomfolder.exe staging/
+            cp -r build/fonts staging/
           else
-            cp build/zoomfolder staging/
+            cd build && cpack
           fi
-          cp -r build/fonts staging/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: zoomfolder-${{ matrix.name }}
-          path: staging/
+          path: |
+            staging/
+            build/Zoomfolder-macos.dmg
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -65,15 +67,13 @@ jobs:
           name: zoomfolder-windows
           path: windows
 
-      - name: Create zips
-        run: |
-          cd macos && zip -r ../zoomfolder-macos.zip . && cd ..
-          cd windows && zip -r ../zoomfolder-windows.zip . && cd ..
+      - name: Create Windows zip
+        run: cd windows && zip -r ../zoomfolder-windows.zip . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            zoomfolder-macos.zip
+            macos/Zoomfolder-macos.dmg
             zoomfolder-windows.zip
           generate_release_notes: true

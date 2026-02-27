@@ -6,6 +6,10 @@ else()
 endif()
 set(CMAKE_C_STANDARD 17)
 
+if(APPLE)
+    set(BUILD_SHARED_LIBS OFF)
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(SDL3
@@ -40,6 +44,29 @@ target_include_directories(zoomfolder PRIVATE src)
 target_link_libraries(zoomfolder PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf nfd)
 
 if(APPLE)
+    set_target_properties(zoomfolder PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Zoomfolder"
+        MACOSX_BUNDLE_BUNDLE_VERSION "0.1.0"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
+        OUTPUT_NAME "Zoomfolder"
+    )
+
+    set_source_files_properties(${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf
+        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/fonts"
+    )
+    target_sources(zoomfolder PRIVATE ${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf)
+
+    install(TARGETS zoomfolder BUNDLE DESTINATION .)
+    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_DMG_VOLUME_NAME "Zoomfolder")
+    set(CPACK_PACKAGE_FILE_NAME "Zoomfolder-macos")
+    include(CPack)
+    add_custom_target(dmg COMMAND cpack WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
+if(APPLE)
     target_sources(zoomfolder PRIVATE src/scanner_posix.c)
 elseif(WIN32)
     target_sources(zoomfolder PRIVATE src/scanner_win32.c)
@@ -47,13 +74,15 @@ else()
     target_sources(zoomfolder PRIVATE src/scanner_posix.c)
 endif()
 
-add_custom_command(TARGET zoomfolder POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        $<TARGET_FILE_DIR:zoomfolder>/fonts
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf
-        $<TARGET_FILE_DIR:zoomfolder>/fonts/Inter-Regular.ttf
-)
+if(NOT APPLE)
+    add_custom_command(TARGET zoomfolder POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:zoomfolder>/fonts
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf
+            $<TARGET_FILE_DIR:zoomfolder>/fonts/Inter-Regular.ttf
+    )
+endif()
 
 # Tests
 enable_testing()
