@@ -1,11 +1,30 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <nfd.h>
 #include <stdio.h>
 
 #include "tree.h"
+#include "scanner.h"
 #include "renderer.h"
 #include "input.h"
+#include "font_cache.h"
+
+typedef enum { STATE_WELCOME, STATE_SCANNING, STATE_VIEWING } AppState;
+
+static void open_folder(ScanContext **scan, Camera *cam, AppState *state,
+                        FontCache *cache)
+{
+    nfdchar_t *path = NULL;
+    if (NFD_PickFolder(&path, NULL) == NFD_OKAY) {
+        if (*scan) scanner_free(*scan);
+        *scan = scanner_start(path);
+        *cam = (Camera){.zoom = 1.0f};
+        *state = STATE_SCANNING;
+        font_cache_clear(cache);
+        NFD_FreePath(path);
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -15,9 +34,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return 1;
     }
-    if (!TTF_Init()) {
+    if (!TTF_Init())
         fprintf(stderr, "TTF_Init: %s\n", SDL_GetError());
-    }
+    NFD_Init();
 
     SDL_Window *window = SDL_CreateWindow("Zoomfolder", 1280, 720,
                                           SDL_WINDOW_RESIZABLE);
@@ -38,33 +57,14 @@ int main(int argc, char *argv[])
     snprintf(font_path, sizeof(font_path), "%sfonts/Inter-Regular.ttf", base);
     TTF_Font *font = TTF_OpenFont(font_path, 14);
     if (!font)
-        fprintf(stderr, "TTF_OpenFont failed: %s (path: %s)\n",
+        fprintf(stderr, "TTF_OpenFont: %s (path: %s)\n",
                 SDL_GetError(), font_path);
 
-    DirNode *root = tree_create("/test");
-    DirNode *docs = tree_add_child(root, "Documents");
-    docs->size = 500000000;
-    DirNode *pics = tree_add_child(root, "Pictures");
-    pics->size = 300000000;
-    DirNode *code = tree_add_child(root, "Code");
-    code->size = 200000000;
-    root->size = 1000000000;
+    FontCache *cache = font_cache_create(512);
 
-    DirNode *work = tree_add_child(docs, "Work");
-    work->size = 350000000;
-    DirNode *personal = tree_add_child(docs, "Personal");
-    personal->size = 150000000;
-
-    DirNode *photos = tree_add_child(pics, "Photos");
-    photos->size = 200000000;
-    DirNode *screenshots = tree_add_child(pics, "Screenshots");
-    screenshots->size = 100000000;
-
-    tree_sort_children(root);
-    tree_sort_children(docs);
-    tree_sort_children(pics);
-
-    Camera cam = {.zoom = 1.0f, .offset_x = 0, .offset_y = 0};
+    AppState state = STATE_WELCOME;
+    ScanContext *scan = NULL;
+    Camera cam = {.zoom = 1.0f};
 
     bool running = true;
     while (running) {
@@ -74,9 +74,17 @@ int main(int argc, char *argv[])
                 running = false;
                 break;
             }
+
             int w, h;
             SDL_GetWindowSize(window, &w, &h);
-            input_handle(&event, &cam, w, h);
+
+            if (event.type == SDL_EVENT_KEY_DOWN &&
+                event.key.key == SDLK_O) {
+                open_folder(&scan, &cam, &state, cache);
+            }
+
+            if (state != STATE_WELCOME)
+                input_handle(&event, &cam, w, h);
         }
 
         int w, h;
@@ -84,12 +92,41 @@ int main(int argc, char *argv[])
 
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
-        renderer_draw(renderer, font, root, &cam, w, h);
+
+        if (state == STATE_WELCOME) {
+            render_welcome(renderer, font, cache, w, h);
+        } else {
+            SDL_LockMutex(scan->mutex);
+            renderer_draw(renderer, font, cache, scan->root, &cam, w, h);
+            bool done = scan->done;
+            uint64_t total = scan->total_size;
+            uint32_t files = scan->total_files;
+            SDL_UnlockMutex(scan->mutex);
+
+            if (!done) {
+                render_scan_indicator(renderer, font, cache,
+                                     files, total, w, h);
+            } else if (state == STATE_SCANNING) {
+                state = STATE_VIEWING;
+            }
+
+            float mx = 0, my = 0;
+            SDL_GetMouseState(&mx, &my);
+            SDL_LockMutex(scan->mutex);
+            DirNode *hovered = renderer_hit_test(scan->root, &cam, w, mx, my);
+            SDL_UnlockMutex(scan->mutex);
+            if (hovered)
+                render_tooltip(renderer, font, cache, hovered,
+                               mx, my, w, h);
+        }
+
         SDL_RenderPresent(renderer);
     }
 
-    tree_free(root);
+    if (scan) scanner_free(scan);
+    font_cache_free(cache);
     if (font) TTF_CloseFont(font);
+    NFD_Quit();
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

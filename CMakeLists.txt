@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
-project(zoomfolder C OBJC)
+if(APPLE)
+    project(zoomfolder C OBJC)
+else()
+    project(zoomfolder C)
+endif()
 set(CMAKE_C_STANDARD 17)
 
 include(FetchContent)
@@ -27,6 +31,7 @@ add_executable(zoomfolder
     src/tree.c
     src/renderer.c
     src/input.c
+    src/font_cache.c
 )
 
 target_include_directories(zoomfolder PRIVATE src)
