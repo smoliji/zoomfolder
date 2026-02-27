@@ -56,7 +56,13 @@ if(APPLE)
     set_source_files_properties(${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf
         PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/fonts"
     )
-    target_sources(zoomfolder PRIVATE ${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf)
+    set_source_files_properties(${CMAKE_SOURCE_DIR}/assets/generated/icon.icns
+        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
+    )
+    target_sources(zoomfolder PRIVATE
+        ${CMAKE_SOURCE_DIR}/fonts/Inter-Regular.ttf
+        ${CMAKE_SOURCE_DIR}/assets/generated/icon.icns
+    )
 
     install(TARGETS zoomfolder BUNDLE DESTINATION .)
     set(CPACK_GENERATOR "DragNDrop")
@@ -69,7 +75,7 @@ endif()
 if(APPLE)
     target_sources(zoomfolder PRIVATE src/scanner_posix.c)
 elseif(WIN32)
-    target_sources(zoomfolder PRIVATE src/scanner_win32.c)
+    target_sources(zoomfolder PRIVATE src/scanner_win32.c ${CMAKE_SOURCE_DIR}/assets/icon.rc)
 else()
     target_sources(zoomfolder PRIVATE src/scanner_posix.c)
 endif()

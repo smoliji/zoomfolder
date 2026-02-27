@@ -18,5 +18,7 @@
     <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>CFBundleIconFile</key>
+    <string>icon</string>
 </dict>
 </plist>
