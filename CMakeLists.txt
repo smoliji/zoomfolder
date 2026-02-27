@@ -24,6 +24,7 @@ FetchContent_Declare(nfd
     GIT_SHALLOW TRUE
 )
 
+set(SDL3TTF_VENDORED ON CACHE BOOL "Use vendored freetype/harfbuzz")
 FetchContent_MakeAvailable(SDL3 SDL3_ttf nfd)
 
 add_executable(zoomfolder
