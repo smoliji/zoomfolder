@@ -4,103 +4,227 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: #0d1117;
-    color: #e6edf3;
-    line-height: 1.6;
+:root {
+    --bg: #0a0a12;
+    --text: #f0f0f5;
+    --text-muted: #8888a0;
+    --accent: #00bcb0;
+    --accent-hover: #00e0d2;
 }
 
-main {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem;
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
 }
+
+/* ---- GitHub Corner ---- */
+
+.github-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 3;
+}
+
+.github-corner svg {
+    fill: var(--accent);
+    color: var(--bg);
+}
+
+.github-corner:hover .octo-arm {
+    animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+    0%, 100% { transform: rotate(0) }
+    20%, 60% { transform: rotate(-25deg) }
+    40%, 80% { transform: rotate(10deg) }
+}
+
+/* ---- Hero ---- */
 
 .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.hero-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 50%, transparent 30%, var(--bg) 80%),
+        radial-gradient(circle 1px at center, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 100% 100%, 24px 24px;
+    z-index: 1;
+}
+
+.hero-bg-img {
+    width: 140%;
+    max-width: none;
+    opacity: 0.25;
+    filter: blur(50px) saturate(1.8);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
     text-align: center;
-    margin-bottom: 4rem;
+    padding: 2rem 1.5rem;
 }
 
 .hero h1 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     margin-bottom: 0.5rem;
 }
 
 .tagline {
     font-size: 1.25rem;
-    color: #8b949e;
-    margin-bottom: 2rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
 }
 
-.screenshot {
-    max-width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-.download {
-    text-align: center;
-    margin-bottom: 4rem;
-}
-
-.download h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.buttons {
+.cta {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+}
+
+/* ---- Screenshot ---- */
+
+.screenshot {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    margin-bottom: 2.5rem;
 }
 
 .btn {
     display: inline-block;
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    background: #00bcb0;
-    color: #0d1117;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1rem;
-    transition: opacity 0.15s;
+    transition: all 0.2s ease;
 }
 
-.btn:hover {
-    opacity: 0.85;
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg);
 }
 
-.features {
-    margin-bottom: 4rem;
+.btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 0 24px rgba(0, 188, 176, 0.3);
 }
 
-.features ul {
-    list-style: none;
+.btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.btn-outline:hover {
+    border-color: var(--accent-hover);
+    color: var(--accent-hover);
+    box-shadow: 0 0 24px rgba(0, 188, 176, 0.15);
+}
+
+/* ---- Badges ---- */
+
+.badges {
     display: flex;
-    flex-direction: column;
     gap: 0.75rem;
-    text-align: center;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-.features li {
-    font-size: 1.1rem;
-    color: #8b949e;
+.badge {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: border-color 0.2s ease, color 0.2s ease;
 }
+
+.badge:hover {
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+/* ---- Footer ---- */
 
 footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
     text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid #21262d;
+    padding: 1.25rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
 }
 
 footer a {
-    color: #8b949e;
+    color: var(--text-muted);
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 footer a:hover {
-    color: #00bcb0;
+    color: var(--accent);
+}
+
+.sep {
+    margin: 0 0.5rem;
+}
+
+/* ---- Mobile ---- */
+
+@media (max-width: 640px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .tagline {
+        font-size: 1.1rem;
+    }
+
+    .cta {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+    }
 }
