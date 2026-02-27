@@ -1,5 +1,7 @@
 # Zoomfolder
 
+Open-source clone of [ZoomDir](https://www.arteryengine.com/zoomdir/) by Viktor Chlumský.
+
 Desktop disk space visualizer — top-down flamegraph with real-time progressive scanning.
 
 ## Dev
