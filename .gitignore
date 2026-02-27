@@ -1,0 +1,6 @@
+build/
+dist/
+sdk/
+*.o
+*.exe
+.DS_Store
