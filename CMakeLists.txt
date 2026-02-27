@@ -17,7 +17,7 @@ FetchContent_Declare(SDL3_ttf
     GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
     GIT_TAG main
     GIT_SHALLOW TRUE
-    GIT_SUBMODULES external/freetype external/harfbuzz
+    GIT_SUBMODULES external/freetype external/harfbuzz external/plutovg external/plutosvg
 )
 FetchContent_Declare(nfd
     GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
