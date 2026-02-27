@@ -5,6 +5,7 @@
 typedef struct DirNode {
     char            name[256];
     uint64_t        size;
+    float           display_size;
     uint32_t        file_count;
     struct DirNode *children;
     uint32_t        child_count;

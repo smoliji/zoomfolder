@@ -19,7 +19,7 @@ static void open_folder(ScanContext **scan, Camera *cam, AppState *state,
     if (NFD_PickFolder(&path, NULL) == NFD_OKAY) {
         if (*scan) scanner_free(*scan);
         *scan = scanner_start(path);
-        *cam = (Camera){.zoom = 1.0f};
+        *cam = (Camera){.zoom = 1.0f, .target_zoom = 1.0f};
         *state = STATE_SCANNING;
         font_cache_clear(cache);
         NFD_FreePath(path);
@@ -64,7 +64,8 @@ int main(int argc, char *argv[])
 
     AppState state = STATE_WELCOME;
     ScanContext *scan = NULL;
-    Camera cam = {.zoom = 1.0f};
+    Camera cam = {.zoom = 1.0f, .target_zoom = 1.0f};
+    uint64_t last_tick = SDL_GetTicksNS();
 
     bool running = true;
     while (running) {
@@ -87,17 +88,31 @@ int main(int argc, char *argv[])
                 input_handle(&event, &cam, w, h);
         }
 
+        uint64_t now = SDL_GetTicksNS();
+        float dt = (float)(now - last_tick) / 1e9f;
+        last_tick = now;
+        if (dt > 0.05f) dt = 0.05f;
+
+        camera_update(&cam, dt);
+
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
 
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        SDL_SetRenderDrawColor(renderer, 28, 28, 38, 255);
         SDL_RenderClear(renderer);
+        render_background(renderer, w, h);
 
         if (state == STATE_WELCOME) {
             render_welcome(renderer, font, cache, w, h);
         } else {
+            float mx = 0, my = 0;
+            SDL_GetMouseState(&mx, &my);
+
             SDL_LockMutex(scan->mutex);
-            renderer_draw(renderer, font, cache, scan->root, &cam, w, h);
+            renderer_animate(scan->root, dt);
+            DirNode *hovered = renderer_hit_test(scan->root, &cam, w, mx, my);
+            renderer_draw(renderer, font, cache, scan->root, &cam,
+                          hovered, w, h);
             bool done = scan->done;
             uint64_t total = scan->total_size;
             uint32_t files = scan->total_files;
@@ -110,11 +125,6 @@ int main(int argc, char *argv[])
                 state = STATE_VIEWING;
             }
 
-            float mx = 0, my = 0;
-            SDL_GetMouseState(&mx, &my);
-            SDL_LockMutex(scan->mutex);
-            DirNode *hovered = renderer_hit_test(scan->root, &cam, w, mx, my);
-            SDL_UnlockMutex(scan->mutex);
             if (hovered)
                 render_tooltip(renderer, font, cache, hovered,
                                mx, my, w, h);

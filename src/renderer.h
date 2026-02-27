@@ -5,13 +5,17 @@
 #include "font_cache.h"
 
 typedef struct {
-    float zoom;
-    float offset_x;
-    float offset_y;
+    float zoom, target_zoom;
+    float offset_x, target_offset_x;
+    float offset_y, target_offset_y;
 } Camera;
 
+void camera_update(Camera *cam, float dt);
+void renderer_animate(DirNode *root, float dt);
 void renderer_draw(SDL_Renderer *r, TTF_Font *font, FontCache *cache,
-                   DirNode *root, Camera *cam, int window_w, int window_h);
+                   DirNode *root, Camera *cam, DirNode *hovered,
+                   int window_w, int window_h);
+void render_background(SDL_Renderer *r, int w, int h);
 void render_welcome(SDL_Renderer *r, TTF_Font *font, FontCache *cache,
                     int w, int h);
 void render_scan_indicator(SDL_Renderer *r, TTF_Font *font, FontCache *cache,

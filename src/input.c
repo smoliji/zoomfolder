@@ -8,11 +8,11 @@ static bool dragging = false;
 
 static void clamp_camera(Camera *cam, int window_w)
 {
-    if (cam->offset_y > 0) cam->offset_y = 0;
+    if (cam->target_offset_y > 0) cam->target_offset_y = 0;
 
-    if (cam->offset_x > 0) cam->offset_x = 0;
-    float min_x = (float)window_w / cam->zoom - (float)window_w;
-    if (cam->offset_x < min_x) cam->offset_x = min_x;
+    if (cam->target_offset_x > 0) cam->target_offset_x = 0;
+    float min_x = (float)window_w / cam->target_zoom - (float)window_w;
+    if (cam->target_offset_x < min_x) cam->target_offset_x = min_x;
 }
 
 void input_handle(SDL_Event *event, Camera *cam, int window_w, int window_h)
@@ -24,16 +24,16 @@ void input_handle(SDL_Event *event, Camera *cam, int window_w, int window_h)
         float mouse_x = 0, mouse_y = 0;
         SDL_GetMouseState(&mouse_x, &mouse_y);
 
-        float wx = mouse_x / cam->zoom - cam->offset_x;
+        float wx = mouse_x / cam->target_zoom - cam->target_offset_x;
 
         float factor = (event->wheel.y > 0)
             ? (1.0f + ZOOM_SPEED)
             : (1.0f / (1.0f + ZOOM_SPEED));
-        cam->zoom *= factor;
-        if (cam->zoom < ZOOM_MIN) cam->zoom = ZOOM_MIN;
-        if (cam->zoom > ZOOM_MAX) cam->zoom = ZOOM_MAX;
+        cam->target_zoom *= factor;
+        if (cam->target_zoom < ZOOM_MIN) cam->target_zoom = ZOOM_MIN;
+        if (cam->target_zoom > ZOOM_MAX) cam->target_zoom = ZOOM_MAX;
 
-        cam->offset_x = mouse_x / cam->zoom - wx;
+        cam->target_offset_x = mouse_x / cam->target_zoom - wx;
         clamp_camera(cam, window_w);
         break;
     }
@@ -49,8 +49,8 @@ void input_handle(SDL_Event *event, Camera *cam, int window_w, int window_h)
 
     case SDL_EVENT_MOUSE_MOTION:
         if (dragging) {
-            cam->offset_x += event->motion.xrel / cam->zoom;
-            cam->offset_y += event->motion.yrel / cam->zoom;
+            cam->target_offset_x += event->motion.xrel / cam->zoom;
+            cam->target_offset_y += event->motion.yrel / cam->zoom;
             clamp_camera(cam, window_w);
         }
         break;
