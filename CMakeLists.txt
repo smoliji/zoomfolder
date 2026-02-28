@@ -6,9 +6,7 @@ else()
 endif()
 set(CMAKE_C_STANDARD 17)
 
-if(APPLE)
-    set(BUILD_SHARED_LIBS OFF)
-endif()
+set(BUILD_SHARED_LIBS OFF)
 
 include(FetchContent)
 
