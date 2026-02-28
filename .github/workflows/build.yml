@@ -36,21 +36,20 @@ jobs:
       - name: Package
         shell: bash
         run: |
+          mkdir -p staging
           if [ "${{ matrix.name }}" = "windows" ]; then
-            mkdir -p staging
             cp build/Release/zoomfolder.exe staging/ 2>/dev/null || cp build/zoomfolder.exe staging/
             cp -r build/fonts staging/
           else
-            cd build && cpack
+            cd build && cpack && cd ..
+            cp build/Zoomfolder-macos.dmg staging/
           fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: zoomfolder-${{ matrix.name }}
-          path: |
-            staging/
-            build/Zoomfolder-macos.dmg
+          path: staging/
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -80,4 +79,5 @@ jobs:
           files: |
             macos/Zoomfolder-macos.dmg
             zoomfolder-windows.zip
+          fail_on_unmatched_files: true
           generate_release_notes: true
